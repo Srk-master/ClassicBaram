@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "674694331985",
+    "project_id": "classicbaram-7f9dd",
+    "storage_bucket": "classicbaram-7f9dd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:674694331985:android:cd1cf43488fe65a1618270",
+        "android_client_info": {
+          "package_name": "com.example.classicbaramgelper"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCrnNKbV9AqcfEhCfU6zioQqP-Tqtvw958"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:674694331985:android:5eec9422d430ec98618270",
+        "android_client_info": {
+          "package_name": "com.example.classicbaramhelper"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCrnNKbV9AqcfEhCfU6zioQqP-Tqtvw958"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
