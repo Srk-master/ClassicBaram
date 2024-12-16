@@ -50,6 +50,9 @@ class DamageCalculator {
       case '헬파이어':
         baseDamage = (currentMp * 1.5); //현재 마력의 150%
         break;
+      case '백호의희원':
+        baseDamage = (currentMp / 2) * 1.5;
+        return baseDamage;
       default:
         throw Exception('알 수 없는 스킬 $skill');
     }

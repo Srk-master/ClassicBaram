@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class InputField extends StatelessWidget {
   final String label;
@@ -25,6 +26,9 @@ class InputField extends StatelessWidget {
             ),
           ),
           keyboardType: TextInputType.number,
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly, //정수 입력만 허용함
+          ],
         ),
       ],
     );

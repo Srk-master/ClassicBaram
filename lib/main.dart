@@ -3,6 +3,8 @@ import 'screens/home_screen.dart';
 import 'widgets/db_helper.dart';
 import 'package:firebase_core/firebase_core.dart';
 //import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'services/remote_config_helper.dart';
+import 'services/VersionChecker.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -10,9 +12,18 @@ void main() async {
   await Firebase.initializeApp();
   await DBHelper().database;
   //await DBHelper().checkPlayerTable();
-  runApp(MyApp());
+
+  //firebase romote 초기화
+  final remoteConfigHelper = RemoteConfigHelper();
+  await remoteConfigHelper.initialize();
+  print('server version ${remoteConfigHelper.getLastestVersion()}');
+  runApp(MyApp(lastestVersion: remoteConfigHelper.getLastestVersion()));
 }
 class MyApp extends StatelessWidget {
+  final String lastestVersion;
+
+  MyApp({required this.lastestVersion});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -48,7 +59,68 @@ class MyApp extends StatelessWidget {
         ),
         fontFamily: 'Maple',  //폰트 설정
       ),
-      home: HomeScreen(),
+      //home: HomeScreen(),
+      home: HomeScreenWrapper(lastestVersion: lastestVersion,),
+    );
+  }
+}
+
+class HomeScreenWrapper extends StatelessWidget {
+  final String lastestVersion;
+
+  HomeScreenWrapper({required this. lastestVersion});
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<bool>(
+      future: VersionChecker(lastestVersion).isUpdateRequired(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return Scaffold(
+            body: Center(child: Text('오류 발생: ${snapshot.error}')),
+          );
+        }
+
+        final isUpdateRequired = snapshot.data ?? false;
+
+        if (isUpdateRequired) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            showDialog(
+              context: context,
+              barrierDismissible: false, // 팝업 외부 클릭으로 닫히지 않음
+              builder: (context) {
+                return AlertDialog(
+                  title: Text('업데이트 필요'),
+                  content: Text('최신 버전이 출시되었습니다. 업데이트하시겠습니까?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        // Play Store로 이동 (앱 패키지명 필요)
+                        Navigator.pop(context);
+                      },
+                      child: Text('예'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context); // 업데이트 팝업 닫기
+                      },
+                      child: Text('아니오'),
+                    ),
+                  ],
+                );
+              },
+            );
+          });
+        }
+
+        return HomeScreen(); // 홈 화면 표시
+      },
     );
   }
 }

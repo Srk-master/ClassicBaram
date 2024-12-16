@@ -17,6 +17,8 @@ class _SkillDamageScreenState extends State<SkillDamageScreen> {
   final TextEditingController _armorController = TextEditingController();
   final TextEditingController _monsterSearchController = TextEditingController();
 
+  final FocusNode _searchFocusNode = FocusNode(); //팝업창 포커스용
+
   bool isCursed = false;
   bool isConfused = false;
   double resultDamage = 0;
@@ -95,6 +97,9 @@ class _SkillDamageScreenState extends State<SkillDamageScreen> {
       context: context,
       builder: (context) {
         // 로컬 필터링된 몬스터 목록을 다이얼로그 내에서 관리
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _searchFocusNode.requestFocus(); //검색 필드에 자동 포커스 넣기
+        });
         List<Map<String, dynamic>> localFilteredMonsters = List.from(monsters);
 
         return StatefulBuilder(
@@ -237,6 +242,17 @@ class _SkillDamageScreenState extends State<SkillDamageScreen> {
                     } else {
                       selectedSkill = '';
                     }
+
+                    // 데이터 초기화
+                    selectedSkill = availableSkills.isNotEmpty ? availableSkills.first : '';
+                    resultDamage = 0;
+                    selectedMonster = null;
+                    monsterHP = 0;
+                    monsterAC = 0;
+                    _armorController.clear();
+                    _monsterSearchController.clear();
+
+
                   });
                 },
                 decoration: InputDecoration(labelText: '직업 선택'),
@@ -258,21 +274,49 @@ class _SkillDamageScreenState extends State<SkillDamageScreen> {
                 decoration: InputDecoration(labelText: '스킬 선택'),
               ),
               SizedBox(height: 16),
-              TextField(
-                controller: _monsterSearchController,
-                decoration: InputDecoration(
-                  labelText: '몬스터 검색',
-                  suffixIcon: IconButton(
-                    icon: Icon(Icons.search),
-                    onPressed: _openMonsterSearchDialog,
+              // 도사일 경우 몬스터 검색 및 방어력 입력 숨김
+              if (selectedJob != '도사') ...[
+                TextField(
+                  controller: _monsterSearchController,
+                  focusNode: _searchFocusNode,
+                  readOnly: true, // TextField 내 키보드 입력 막기
+                  onTap: _openMonsterSearchDialog, // 텍스트 필드 클릭 시 팝업 열기
+                  decoration: InputDecoration(
+                    labelText: '몬스터 검색',
+                    suffixIcon: IconButton(
+                      icon: Icon(Icons.search),
+                      onPressed: _openMonsterSearchDialog,
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(height: 16),
-              if (selectedMonster != null) ...[
-                Text('몬스터 체력: $monsterHP', style: TextStyle(fontSize: 16)),
+                SizedBox(height: 16),
+                if (selectedMonster != null) ...[
+                  Text('몬스터 체력: $monsterHP', style: TextStyle(fontSize: 16)),
+                ],
+                SizedBox(height: 16),
+                TextField(
+                  decoration: InputDecoration(labelText: '대상 방어력'),
+                  controller: _armorController,
+                  keyboardType: TextInputType.number,
+                ),
+                SizedBox(height: 16),
+                CheckboxListTile(
+                  title: Text('저주 적용'),
+                  value: isCursed,
+                  onChanged: (value) {
+                    _handleDebuffSelection(value!, 'curse');
+                  },
+                ),
+                CheckboxListTile(
+                  title: Text('혼마술 적용'),
+                  value: isConfused,
+                  onChanged: (value) {
+                    _handleDebuffSelection(value!, 'confuse');
+                  },
+                ),
               ],
               SizedBox(height: 16),
+              //공용 입력 필드
               TextField(
                 decoration: InputDecoration(labelText: '현재 체력'),
                 controller: _currentHpController,
@@ -285,35 +329,24 @@ class _SkillDamageScreenState extends State<SkillDamageScreen> {
                 keyboardType: TextInputType.number,
               ),
               SizedBox(height: 16),
-              TextField(
-                decoration: InputDecoration(labelText: '대상 방어력'),
-                controller: _armorController,
-                keyboardType: TextInputType.number,
-              ),
-              SizedBox(height: 16),
-              CheckboxListTile(
-                title: Text('저주 적용'),
-                value: isCursed,
-                onChanged: (value) {
-                  _handleDebuffSelection(value!, 'curse');
-                },
-              ),
-              CheckboxListTile(
-                title: Text('혼마술 적용'),
-                value: isConfused,
-                onChanged: (value) {
-                  _handleDebuffSelection(value!, 'confuse');
-                },
-              ),
-              SizedBox(height: 20),
+
+
+              //계산 버튼
               ElevatedButton(
-                onPressed: _calculateDamage,
-                child: Text('데미지 계산하기'),
+                onPressed:
+                _calculateDamage,
+                child: Text(selectedJob == '도사' ? '회복량 계산하기' : '데미지 계산하기'),
               ),
               SizedBox(height: 24),
-              if (resultDamage > 0)
+              // 결과 출력
+              if (selectedJob == '도사' && resultDamage > 0)
                 Text(
-                  '계산된 데미지 : ${resultDamage.toStringAsFixed(0)}',
+                  '계산된 회복량: ${resultDamage.toStringAsFixed(0)}',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              if (selectedJob != '도사' && resultDamage > 0) ...[
+                Text(
+                  '계산된 데미지: ${resultDamage.toStringAsFixed(0)}',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               SizedBox(height: 8,),
@@ -322,10 +355,12 @@ class _SkillDamageScreenState extends State<SkillDamageScreen> {
                   '남은 몬스터 체력: ${_calculateMobHP()}',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
                 ),
+              if (monsterHP > 0)
                 Text(
                   '필요한 타격 횟수: ${_calculateHitsToKill()}회',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
                 ),
+              ],
             ],
           ),
         ),

@@ -46,32 +46,38 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       });
     }
   }
+  //에러 알림
+  void _showErrorDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('확인'),
+          ),
+        ],
+      ),
+    );
+  }
   //유효성 검사
-  bool validateInput(double currentHp, double targetHp,
-      double currentMp, double targetMp) {
+  bool validateInput(double currentHp, double targetHp, double currentMp, double targetMp) {
     final maxHp = isWR ? maxWRHp : maxJDHp;
     final maxMp = isWR ? maxWRMp : maxJDMp;
-
+    if (targetHp < currentHp || targetMp < currentMp) {
+      _showErrorDialog('입력 오류', '목표 체력/마력은 현재 체력/마력보다 낮을 수 없습니다.');
+      return false; // 유효 x
+    }
+    // 음수 검사
+    if (currentHp <= 0 || targetHp <= 0 || currentMp <= 0 || targetMp <= 0) {
+      _showErrorDialog('입력 오류', '체력 마력 값은 0보다 커야합니다.');
+      return false; //유효 x
+    }
     if (targetHp > maxHp || targetMp > maxMp) {
-      showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: Text('입력 오류'),
-              content: Text(
-                '${isWR ? '격수' : '비격수'}의 체력 또는 마력 범위를 초과했습니다.\n'
-                    '최대 체력 : ${maxHp.toStringAsFixed(0)}\n'
-                    '최대 마력 : ${maxMp.toStringAsFixed(0)}',
-              ),
-              actions: [
-                TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text('확인'),
-                ),
-              ],
-            );
-          },
-      );
+      _showErrorDialog('입력 오류', '${isWR ? '격수' : '비격수'}의 체력 또는 마력 범위를 초과했습니다.\n'
+          '최대 체력: ${maxHp.toStringAsFixed(0)}\n최대 마력: ${maxMp.toStringAsFixed(0)}');
       return false; //유효 x
     }
     return true; //유효

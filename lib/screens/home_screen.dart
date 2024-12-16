@@ -1,3 +1,4 @@
+import 'package:classicbaramhelper/screens/ItemSearchScreen.dart';
 import 'package:classicbaramhelper/screens/userinfo_screen.dart';
 import 'package:classicbaramhelper/widgets/AnimatedButton.dart';
 import 'package:flutter/material.dart';
@@ -86,9 +87,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     Expanded(
                       child: AnimatedButton(
                         icon: RpgAwesome.spinning_sword,
-                        title: '아이템 검색(준비중)',
+                        title: '아이템 검색',
                         onPressed: (){
-                          //아이템 검색 이동 나중에 구현
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => ItemSearchScreen()),
+                          );
                         },
                       ),
                     ),

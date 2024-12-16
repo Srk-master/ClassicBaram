@@ -1,12 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.classicbaramhelper">
+    package="com.karegaru.classicbaramhelper">
 
     <application
         android:label="classicbaramhelper"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher">
         <activity
-            android:name=".MainActivity"
+            android:name="com.karegaru.classicbaramhelper.MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
             android:taskAffinity=""
